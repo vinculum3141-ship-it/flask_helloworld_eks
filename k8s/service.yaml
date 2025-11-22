@@ -1,0 +1,23 @@
+# This YAML file defines a Kubernetes Service for the "hello-flask" application.
+# It exposes the Flask app running on port 5000 inside the pods.
+# The service forwards traffic from port 5000 to port 5000 in the pods selected by the label `app: hello-flask`.
+#
+# Note: Changed to ClusterIP (from NodePort) to work with Ingress.
+# - ClusterIP: Service is only accessible within the cluster (used with Ingress)
+# - NodePort: Service is accessible externally via node IP:port (no Ingress needed)
+#
+# To use NodePort instead (without Ingress), change type to NodePort and uncomment nodePort line.
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-flask
+spec:
+  type: ClusterIP  # Changed from NodePort to work with Ingress
+  selector:
+    app: hello-flask
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      # For NodePort (without Ingress), uncomment below and change type to NodePort:
+      # nodePort: 30xxx  # optional; if omitted Kubernetes picks one in 30000-32767

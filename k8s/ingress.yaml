@@ -1,0 +1,31 @@
+# This YAML file defines a Kubernetes Ingress resource to expose the Flask application.
+# An Ingress provides HTTP/HTTPS routing from outside the cluster to services within the cluster.
+# 
+# For Minikube (local development):
+#   - Uses nginx ingress controller
+#   - Access via: http://hello-flask.local
+#   - Requires: minikube addons enable ingress
+#   - Add to /etc/hosts: $(minikube ip) hello-flask.local
+
+---
+# Ingress configuration for Minikube (nginx-ingress)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-flask-ingress
+  annotations:
+    # For nginx ingress controller (Minikube)
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx  # Modern way to specify ingress class (replaces deprecated annotation)
+  rules:
+  - host: hello-flask.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-flask
+            port:
+              number: 5000

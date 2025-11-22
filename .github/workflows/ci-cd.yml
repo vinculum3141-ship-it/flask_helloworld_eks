@@ -1,0 +1,389 @@
+# ---------------------------------------------------------------------------------
+# NOTE: Nested workflow (reference only)
+# This file lives under `flask-k8s/.github/workflows/` and is NOT executed by
+# GitHub Actions. Only workflows in the repository root at `.github/workflows/`
+# are picked up automatically.
+#
+# Use this as a template or example. To run it:
+#   1) Move it to the repo root at `.github/workflows/`, or
+#   2) Convert it to a reusable workflow by replacing `on:` with `workflow_call:`
+#      and calling it from a root workflow with `uses: ./.github/workflows/<file>.yml`.
+#
+# This CI/CD pipeline includes:
+# - Application deployment with Ingress support (nginx for Minikube)
+# - Unit tests for Flask application
+# - Kubernetes integration tests (auto-detects NodePort vs Ingress)
+# - Ingress-specific tests (skipped if Ingress not deployed)
+# - Smoke tests and security scanning
+# ---------------------------------------------------------------------------------
+name: Flask CI/CD Pipeline
+
+# Pipeline Triggers - defines when this workflow will run
+on:
+  # Automatic trigger on pushes to specific branches
+  push:
+    branches:
+      - main          # Production branch - triggers full deployment pipeline
+      - develop       # Development branch - integration testing
+      - 'feature/**'  # Feature branches - early feedback during development
+      - 'hotfix/**'   # Hotfix branches - urgent production fixes
+  
+  # Automatic trigger on pull requests targeting main branches
+  pull_request:
+    branches:
+      - main          # PRs to production - thorough validation required
+      - develop       # PRs to development - integration validation
+  
+  # Manual trigger - allows on-demand pipeline execution with custom parameters
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for deployment context'
+        required: false
+        default: 'test'
+        type: choice
+        options:
+          - test        # Test environment - safe for experimentation
+          - staging     # Staging environment - production-like testing
+          - production  # Production environment - live deployment
+      run_smoke_tests:
+        description: 'Run smoke tests - uncheck for faster pipeline execution'
+        required: false
+        default: true
+        type: boolean
+      debug_mode:
+        description: 'Enable debug mode for scripts (verbose output)'
+        required: false
+        default: false
+        type: boolean
+
+# Environment variables available to all jobs
+env:
+  PYTHON_VERSION: "3.11"
+  DOCKER_IMAGE_NAME: hello-flask
+  REGISTRY: docker.io
+  # Debug mode for script troubleshooting - set to "1" for verbose output
+  # Can be overridden via workflow_dispatch input
+  DEBUG: ${{ github.event.inputs.debug_mode == 'true' && '1' || '0' }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent stuck jobs from running indefinitely
+    
+    # Security: Limit permissions to minimum required
+    permissions:
+      contents: read        # Read repository contents
+      actions: read         # Read workflow artifacts
+      pull-requests: write  # Comment on PRs with results
+    
+    # Environment variables for this job
+    env:
+      MINIKUBE_DRIVER: docker
+      KUBERNETES_VERSION: v1.28.0
+    
+    steps:
+      # --- Step 1: Checkout the repo ---
+      - name: Checkout repository
+        uses: actions/checkout@v5  # Updated to latest major version
+        timeout-minutes: 5
+
+      # --- Step 2: Setup Python with dependency caching ---
+      - name: Set up Python
+        uses: actions/setup-python@v6  # Updated to latest major version
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # Safe pip cache restore (optional). Guarded so it won't fail on forks or when cache is unavailable.
+      - name: Restore pip cache (safe)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('app/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Note: Virtualenv cache removed - always create fresh venv to avoid issues after repo rename
+
+      # --- Step 3: Install dependencies (use venv) ---
+      - name: Install Python dependencies (venv)
+        timeout-minutes: 10
+        run: |
+          # Remove any existing venv to ensure clean state
+          rm -rf .venv
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r app/requirements.txt pytest requests
+          # Add venv to PATH for subsequent steps
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
+        
+      # --- Step 4: Validate Repository Structure ---
+      - name: Validate repository structure
+        timeout-minutes: 5
+        run: |
+          echo "Validating repository structure and required files..."
+          bash scripts/validate_repo_structure.sh
+
+      # --- Step 5: Validate Workflow Configuration ---
+      - name: Validate workflow configuration
+        timeout-minutes: 5
+        run: |
+          echo "Validating GitHub Actions workflow configuration..."
+          bash scripts/validate_workflow.sh
+        
+      # --- Step 6: Setup Docker & Minikube ---
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        with:
+          driver-opts: |
+            image=moby/buildkit:buildx-stable-1
+
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@e3c7f79eb1e997eabccc536a6cf318a2b0fe19d9 # v0.0.20
+        timeout-minutes: 10
+        with:
+          minikube-version: 1.32.0
+          kubernetes-version: ${{ env.KUBERNETES_VERSION }}
+          driver: docker
+          cpus: 2
+          memory: 4g
+      
+      # --- Enable Ingress addon for Minikube ---
+      - name: Enable Ingress controller
+        timeout-minutes: 5
+        run: |
+          echo "Enabling nginx ingress addon..."
+          minikube addons enable ingress
+          
+          echo "Waiting for ingress controller to be ready..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=180s
+          
+          echo "✓ Ingress controller is ready"
+          
+      # --- Step 7: Docker layer caching (guarded) ---
+      # Prepare buildx cache directories so build works even without a restored cache
+      - name: Prepare buildx cache dirs
+        run: mkdir -p /tmp/.buildx-cache /tmp/.buildx-cache-new
+
+      - name: Setup Docker layer caching (safe)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # Caching note:
+      # We point the Docker CLI at Minikube's docker daemon (eval "$(minikube -p minikube docker-env)").
+      # This uses the buildx "docker" driver, which DOES NOT support exporting/importing cache to a local directory
+      # (type=local). Attempting to use --cache-to/--cache-from with type=local causes buildx to exit with:
+      #   "Cache export is not supported for the docker driver. Switch to a different driver, or turn on the containerd image store..."
+      # The restore step is kept here for future use if we switch to a cache-capable driver; it is guarded and non-blocking.
+      # --- Step 8: Build Docker Image ---
+      - name: Build Docker image
+        timeout-minutes: 15
+        run: |
+          set -euxo pipefail
+          echo "Configuring shell to use Minikube's docker daemon"
+          eval "$(minikube -p minikube docker-env)"
+
+          # Build Docker image WITHOUT buildx cache flags for compatibility with Minikube docker driver
+          docker build \
+            -t ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} \
+            -t ${{ env.DOCKER_IMAGE_NAME }}:latest \
+            app/
+
+      # --- Step 9: Deploy app with Ingress (skip for PRs) ---
+      - name: Deploy app
+        timeout-minutes: 10
+        if: ${{ github.event_name != 'pull_request' }}  # Skip deployment for PRs
+        run: bash scripts/deploy_local.sh
+
+      # --- Step 10: Wait for deployment readiness ---
+      - name: Wait for deployment to be ready
+        if: ${{ github.event_name != 'pull_request' }}
+        timeout-minutes: 5
+        run: |
+          echo "Waiting for pods to be ready..."
+          kubectl wait --for=condition=ready pod -l app=hello-flask --timeout=300s
+          
+          echo "Waiting for Ingress to get an address..."
+          # Wait up to 3 minutes for ingress controller to assign an address
+          for i in {1..36}; do
+            ADDRESS=$(kubectl get ingress hello-flask-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+            if [ -n "$ADDRESS" ]; then
+              echo "✓ Ingress has address: $ADDRESS"
+              break
+            fi
+            echo "Waiting for Ingress address... (attempt $i/36)"
+            sleep 5
+          done
+          
+          # Verify Ingress configuration
+          echo "Ingress status:"
+          kubectl get ingress hello-flask-ingress
+          kubectl describe ingress hello-flask-ingress
+      
+      # --- Step 8.5: Debug deployment state ---
+      - name: Debug deployment state
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          echo "=== Minikube IP ==="
+          minikube ip
+          
+          echo "=== All Services ==="
+          kubectl get svc -A
+          
+          echo "=== All Ingresses ==="
+          kubectl get ingress -A
+          
+          echo "=== Pod Status ==="
+          kubectl get pods -l app=hello-flask -o wide
+          
+          echo "=== Service Details ==="
+          kubectl describe svc hello-flask
+          
+          echo "=== Ingress Nginx Logs (last 20 lines) ==="
+          kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --tail=20 || echo "Could not fetch ingress logs"
+          
+      # --- Step 11: Run Unit Tests ---
+      - name: Run unit tests
+        id: unit-tests
+        timeout-minutes: 10
+        continue-on-error: true  # Don't stop workflow if unit tests fail
+        run: bash scripts/unit_tests.sh
+
+      # --- Step 12: Run Kubernetes-level tests ---
+      - name: Run Kubernetes tests
+        id: k8s-tests
+        if: ${{ github.event_name != 'pull_request' }}
+        timeout-minutes: 15
+        continue-on-error: true  # Don't stop workflow if K8s tests fail
+        run: bash scripts/k8s_tests.sh
+
+      # --- Step 13: Run Smoke Tests (conditional) ---
+      # Runs smoke tests by default, but can be skipped via manual trigger input
+      # Condition: Always run unless manually triggered with run_smoke_tests=false
+      - name: Run smoke tests
+        id: smoke-tests
+        if: ${{ github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.run_smoke_tests == true) }}
+        timeout-minutes: 10
+        continue-on-error: true  # Don't stop workflow if smoke tests fail
+        run: bash scripts/smoke_test.sh
+
+      # --- Step 14: Upload test artifacts ---
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()  # Upload even if tests failed
+        with:
+          name: test-results-${{ github.run_number }}
+          path: |
+            test-reports/
+            logs/
+            *.log
+          retention-days: 30
+
+      # --- Step 15: Cleanup (Always Runs) ---
+      # This step runs regardless of previous step failures to ensure resource cleanup
+      - name: Cleanup Minikube resources
+        if: always()  # Always run cleanup, even if previous steps failed
+        timeout-minutes: 5
+        run: bash scripts/delete_local.sh
+
+      # --- Step 16: Report Test Results ---
+      # Check if any tests failed and fail the workflow accordingly
+      - name: Check test results and report status
+        if: always()  # Always run to properly report final status
+        run: |
+          echo "=== 📊 Test Results Summary ==="
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Event: ${{ github.event_name }}"
+          echo ""
+          
+          # Check unit tests
+          if [[ "${{ steps.unit-tests.outcome }}" == "failure" ]]; then
+            echo "❌ Unit tests failed"
+            TESTS_FAILED=true
+          else
+            echo "✅ Unit tests passed"
+          fi
+          
+          # Check K8s tests
+          if [[ "${{ steps.k8s-tests.outcome }}" == "failure" ]]; then
+            echo "❌ Kubernetes tests failed"
+            TESTS_FAILED=true
+          else
+            echo "✅ Kubernetes tests passed"
+          fi
+          
+          # Check smoke tests (only if they were supposed to run)
+          if [[ "${{ steps.smoke-tests.outcome }}" == "failure" ]]; then
+            echo "❌ Smoke tests failed"
+            TESTS_FAILED=true
+          elif [[ "${{ steps.smoke-tests.outcome }}" == "success" ]]; then
+            echo "✅ Smoke tests passed"
+          else
+            echo "⏭️ Smoke tests skipped"
+          fi
+          
+          echo ""
+          
+          # Fail the workflow if any tests failed
+          if [[ "$TESTS_FAILED" == "true" ]]; then
+            echo "❌ Pipeline failed due to test failures"
+            echo "::error title=Tests Failed::One or more test suites failed. Check the logs above for details."
+            exit 1
+          else
+            echo "✅ All tests passed successfully! 🎉"
+            echo "::notice title=All Tests Passed::Pipeline completed successfully with all tests passing."
+          fi
+
+  # Security scanning job (runs in parallel)
+  security-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # Cache Trivy vulnerability database to speed up scans (safe)
+      - name: Restore Trivy DB cache (safe)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: ~/.cache/trivy
+          key: ${{ runner.os }}-trivy-db
+          restore-keys: |
+            ${{ runner.os }}-trivy-
+
+      - name: Run Trivy vulnerability scanner
+        env:
+          TRIVY_CACHE_DIR: ~/.cache/trivy
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # 0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-config
+data:
+  APP_ENV: "local"
+  LOG_LEVEL: "debug"
