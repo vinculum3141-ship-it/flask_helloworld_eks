@@ -36,7 +36,7 @@ The repository includes automated validation scripts that check your local envir
 **Script**: `scripts/validate_repo_structure.sh`
 
 **What it checks**:
-- ✅ Core application files (`app/app.py`, `Dockerfile`, `requirements.txt`)
+- ✅ Core application files (`app/app.py`, `Dockerfile`, `.dockerignore`, `requirements.txt`)
 - ✅ Kubernetes manifests (all YAML files in `k8s/`)
 - ✅ Automation scripts (all scripts in `scripts/`)
 - ✅ Test suite (`test_k8s/`, `app/tests/`)

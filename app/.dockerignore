@@ -1,0 +1,71 @@
+# .dockerignore
+# Excludes files from Docker build context for faster builds, smaller images, and better security
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments (never include in container)
+venv/
+env/
+ENV/
+virtualenv/
+
+# Testing artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+.tox/
+.hypothesis/
+
+# Development dependencies (use requirements.txt for runtime deps)
+requirements-dev.txt
+
+# Git version control
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (not needed in runtime container)
+*.md
+README.md
+docs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Docker files themselves
+Dockerfile*
+.dockerignore
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Local development files
+.env
+.env.local
+*.local

@@ -65,6 +65,7 @@ echo -e "${BLUE}📦 Core Application Files${NC}"
 echo "-------------------------"
 check_file "app/app.py" "Flask application"
 check_file "app/Dockerfile" "Docker build configuration"
+check_file "app/.dockerignore" "Docker build context exclusions"
 check_file "app/requirements.txt" "Python dependencies"
 # Note: __pycache__ is created automatically by Python, not required for validation
 if [[ -d "app/__pycache__" ]]; then
