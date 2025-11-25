@@ -125,7 +125,7 @@ def validate_coverage(verbose: bool = False) -> Tuple[bool, Dict]:
     extra_tests = [test for test in implemented if test not in all_expected]
     
     # Print results
-    print(f"📊 Test Inventory:")
+    print("📊 Test Inventory:")
     print(f"   Expected:     {TOTAL_EXPECTED} tests")
     print(f"   Implemented:  {len(implemented)} tests")
     print(f"   Missing:      {len(missing_tests)} tests")
@@ -141,7 +141,7 @@ def validate_coverage(verbose: bool = False) -> Tuple[bool, Dict]:
         
         if status["missing"]:
             all_good = False
-            print(f"   ⚠️  Missing tests:")
+            print("   ⚠️  Missing tests:")
             for test in status["missing"]:
                 print(f"      - {test}")
         
@@ -203,10 +203,10 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Validate test requirement coverage")
-    parser.add_argument("-v", "--verbose", action="store_true", 
-                       help="Show detailed test listing")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Show detailed test listing")
     parser.add_argument("--json", action="store_true",
-                       help="Output results as JSON")
+                        help="Output results as JSON")
     
     args = parser.parse_args()
     

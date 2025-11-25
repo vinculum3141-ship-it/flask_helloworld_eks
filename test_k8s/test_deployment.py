@@ -1,7 +1,4 @@
 """Test deployment and pod status."""
-import pytest
-
-from .utils import get_pods
 
 
 def test_pods_running(running_pods, deployment):

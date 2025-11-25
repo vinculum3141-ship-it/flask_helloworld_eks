@@ -8,9 +8,6 @@ This test verifies that:
 
 Note: Readiness probe tests are in test_readiness_probe.py
 """
-import pytest
-
-from .utils import get_deployment, get_pods, get_running_pods
 
 
 def test_liveness_probe_configured(deployment):

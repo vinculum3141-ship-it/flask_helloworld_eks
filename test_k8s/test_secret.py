@@ -52,7 +52,7 @@ def test_secret_values_are_base64_encoded(secret):
         assert decoded_value == expected_decoded, \
             f"Expected {key} to decode to '{expected_decoded}', got '{decoded_value}'"
     
-    print(f"✓ All Secret values are correctly base64-encoded")
+    print("✓ All Secret values are correctly base64-encoded")
 
 
 def test_deployment_references_secret(deployment, secret_name):

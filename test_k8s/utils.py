@@ -8,7 +8,7 @@ import json
 import os
 import subprocess
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 class KubectlError(Exception):
@@ -450,9 +450,9 @@ def print_debug_info(label_selector: str = "app=hello-flask", namespace: str = "
     Example:
         print_debug_info()  # Prints current state of all hello-flask resources
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("DEBUG INFORMATION")
-    print("="*60)
+    print("=" * 60)
     
     # Pods
     try:
@@ -485,7 +485,7 @@ def print_debug_info(label_selector: str = "app=hello-flask", namespace: str = "
     except Exception as e:
         print(f"  Error getting service: {e}")
     
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
 
 def get_configmap(name: str, namespace: str = "default") -> Optional[Dict[str, Any]]:

@@ -8,7 +8,7 @@ import requests
 import time
 import pytest
 
-from .utils import get_service, get_service_url
+from .utils import get_service_url
 
 
 @pytest.mark.nodeport
@@ -37,7 +37,7 @@ def test_nodeport_service_reachable(service, k8s_timeouts):
     if service_type != "NodePort":
         pytest.skip(f"Service type is '{service_type}', not 'NodePort'")
     
-    print(f"Testing NodePort service accessibility...")
+    print("Testing NodePort service accessibility...")
     
     # Get the service URL from Minikube
     url = None

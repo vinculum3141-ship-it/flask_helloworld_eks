@@ -2,7 +2,7 @@
 import pytest
 import requests
 
-from .utils import get_service, get_minikube_ip, get_running_pods
+from .utils import get_minikube_ip
 
 
 @pytest.mark.ingress

@@ -18,9 +18,11 @@ if not hasattr(werkzeug, "__version__"):
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def hello():
     return jsonify(message="Hello from Flask on Kubernetes (Minikube)!")
+
 
 @app.route("/health")
 def health():
@@ -35,6 +37,7 @@ def health():
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response, 200
+
 
 @app.route("/ready")
 def ready():
@@ -54,6 +57,7 @@ def ready():
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response, 200
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

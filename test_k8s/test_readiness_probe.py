@@ -6,9 +6,6 @@ This test verifies that:
 2. Pods become ready only when the readiness probe succeeds
 3. Traffic is routed only to ready pods
 """
-import pytest
-
-from .utils import get_deployment, get_pods, get_running_pods
 
 
 def test_readiness_probe_configured(deployment):

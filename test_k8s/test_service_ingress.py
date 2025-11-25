@@ -11,7 +11,7 @@ import time
 import requests
 import pytest
 
-from .utils import get_service, get_ingress, get_minikube_ip, is_ci_environment
+from .utils import get_minikube_ip, is_ci_environment
 
 
 def get_ingress_url_and_host(ingress):
@@ -75,7 +75,7 @@ def test_ingress_service_reachable(service, ingress, k8s_timeouts):
     if service_type != "ClusterIP":
         pytest.skip(f"Service type is '{service_type}', expected 'ClusterIP' for Ingress test")
     
-    print(f"Testing Ingress service accessibility...")
+    print("Testing Ingress service accessibility...")
     
     # Get URL and Host header from Ingress
     url, host_header = get_ingress_url_and_host(ingress)
@@ -157,7 +157,7 @@ def test_hostname_routing_rejects_wrong_host(ingress, k8s_timeouts):
     
     timeout = k8s_timeouts.get('http_request', 5)
     
-    print(f"\nTesting hostname-based routing:")
+    print("\nTesting hostname-based routing:")
     print(f"  Configured hostname: {ingress_host}")
     print(f"  Minikube IP: {minikube_ip}")
     
@@ -198,7 +198,7 @@ def test_hostname_routing_rejects_wrong_host(ingress, k8s_timeouts):
     
     print("\n  📚 Learning: Ingress routes based on Host header, not URL!")
     print(f"     - Host: {ingress_host} → 200 OK")
-    print(f"     - Host: wrong-hostname.local → 404 Not Found")
+    print("     - Host: wrong-hostname.local → 404 Not Found")
     print(f"     - Host: {minikube_ip} → 404 Not Found")
 
 
@@ -223,6 +223,7 @@ def test_response_consistency_ingress_vs_direct(service, ingress, k8s_timeouts):
     url, host_header = get_ingress_url_and_host(ingress)
     if not url:
         pytest.skip("Could not determine Ingress URL")
+    assert url is not None  # Type guard for Pylance
     
     headers = {}
     if host_header and not url.endswith(host_header):
@@ -306,6 +307,7 @@ def test_ingress_load_balancing(service, ingress, k8s_timeouts):
     url, host_header = get_ingress_url_and_host(ingress)
     if not url:
         pytest.skip("Could not determine Ingress URL")
+    assert url is not None  # Type guard for Pylance
     
     headers = {}
     if host_header and not url.endswith(host_header):

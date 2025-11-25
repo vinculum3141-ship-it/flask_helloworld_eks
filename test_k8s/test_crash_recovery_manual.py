@@ -72,7 +72,7 @@ def test_self_healing_pod_deletion(k8s_timeouts, label_selector):
     assert success, f"Failed to delete pod: {pod_to_delete}"
     
     print(f"   Pod {pod_to_delete} deletion initiated...")
-    print(f"   Waiting for ReplicaSet to create replacement...")
+    print("   Waiting for ReplicaSet to create replacement...")
     
     # Wait for new pod to be created and become ready
     timeout = k8s_timeouts.get('pod_ready', 60)
@@ -82,7 +82,7 @@ def test_self_healing_pod_deletion(k8s_timeouts, label_selector):
         print(f"   ✅ New pod created and running ({elapsed_info})")
     else:
         print(f"   ⚠️  New pod did not become ready within {timeout}s")
-        print(f"   This may indicate cluster resource issues or slow startup")
+        print("   This may indicate cluster resource issues or slow startup")
         print(f"   Current pods: {len(get_pods(label_selector))}")
         print_debug_info(label_selector)
     
@@ -93,7 +93,7 @@ def test_self_healing_pod_deletion(k8s_timeouts, label_selector):
     print(f"   Final state: {running_count}/{initial_pod_count} pods running")
     
     if running_count >= initial_pod_count:
-        print(f"   ✅ Self-healing verified: ReplicaSet maintained pod count")
+        print("   ✅ Self-healing verified: ReplicaSet maintained pod count")
     else:
         print(f"   ℹ️  Manual verification recommended - pod count: {running_count}/{initial_pod_count}")
 
@@ -135,15 +135,14 @@ def test_container_restart_on_crash(k8s_timeouts, label_selector):
     # Note: This command will fail because the process dies, but that's expected
     exec_in_pod(test_pod, ["bash", "-c", "kill -9 1"], check=False)
     
-    print(f"   Crash command sent, waiting for self-healing...")
-    print(f"   Expected: Container restart OR pod replacement")
+    print("   Crash command sent, waiting for self-healing...")
+    print("   Expected: Container restart OR pod replacement")
     
     # Wait for Kubernetes to recover (either way)
     max_wait = 30  # Should be quick since restartPolicy: Always doesn't wait for liveness probe
     start_time = time.time()
     recovery_detected = False
     recovery_type = None
-    new_restart_count = initial_restart_count
     
     while time.time() - start_time < max_wait:
         time.sleep(2)
@@ -152,10 +151,11 @@ def test_container_restart_on_crash(k8s_timeouts, label_selector):
         
         # Check if the original pod's container restarted
         current_restart_count = get_pod_restart_count(test_pod)
-        if current_restart_count is not None and current_restart_count > initial_restart_count:
+        if (current_restart_count is not None and 
+                initial_restart_count is not None and 
+                current_restart_count > initial_restart_count):
             recovery_detected = True
             recovery_type = "container_restart"
-            new_restart_count = current_restart_count
             elapsed = time.time() - start_time
             print(f"   ✅ Container restarted in same pod (took {elapsed:.1f}s)")
             print(f"   Restart count: {initial_restart_count} → {current_restart_count}")
@@ -178,12 +178,12 @@ def test_container_restart_on_crash(k8s_timeouts, label_selector):
     # For manual testing, we provide informational output even if recovery isn't detected
     if not recovery_detected:
         print(f"   ⚠️  No obvious recovery detected within {max_wait}s")
-        print(f"   This is common due to race conditions - container may restart too fast to observe")
+        print("   This is common due to race conditions - container may restart too fast to observe")
         print(f"   Current restart count: {get_pod_restart_count(test_pod)}")
         print_debug_info(label_selector)
     
     # Wait for all pods to be ready
-    print(f"   Waiting for pods to stabilize...")
+    print("   Waiting for pods to stabilize...")
     wait_for_pods_ready(initial_pod_count, label_selector=label_selector, timeout=30)
     
     # Verify we have the expected number of healthy, ready pods
@@ -194,4 +194,4 @@ def test_container_restart_on_crash(k8s_timeouts, label_selector):
     if recovery_type:
         print(f"   ✅ Self-healing verified via {recovery_type}")
     else:
-        print(f"   ℹ️  Manual verification recommended - automated detection may miss fast restarts")
+        print("   ℹ️  Manual verification recommended - automated detection may miss fast restarts")

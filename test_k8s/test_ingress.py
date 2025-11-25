@@ -2,7 +2,7 @@
 import time
 import pytest
 
-from .utils import get_ingress, run_kubectl
+from .utils import get_ingress
 
 
 @pytest.mark.ingress

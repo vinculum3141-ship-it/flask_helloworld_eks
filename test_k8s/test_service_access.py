@@ -4,9 +4,11 @@ import time
 import json
 import os
 
+
 def is_ci_environment():
     """Detect if running in CI/CD environment."""
     return os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
+
 
 def get_service_type():
     """Determine if service is NodePort or ClusterIP."""
@@ -19,6 +21,7 @@ def get_service_type():
     
     svc_data = json.loads(result.stdout)
     return svc_data.get("spec", {}).get("type", "ClusterIP")
+
 
 def get_nodeport_url():
     """Get service URL for NodePort service type."""
@@ -33,6 +36,7 @@ def get_nodeport_url():
             break
         time.sleep(1)
     return url
+
 
 def get_ingress_url():
     """Get URL from Ingress resource.
@@ -77,6 +81,7 @@ def get_ingress_url():
     # Local development: Use the ingress hostname
     print(f"Using Ingress hostname: {ingress_host}")
     return f"http://{ingress_host}", ingress_host
+
 
 def test_service_reachable():
     """Ensure the exposed service URL is responding.

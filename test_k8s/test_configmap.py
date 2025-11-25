@@ -1,6 +1,4 @@
 """Test ConfigMap integration with pods."""
-import pytest
-
 from .utils import exec_in_pod, deployment_references_resource
 
 

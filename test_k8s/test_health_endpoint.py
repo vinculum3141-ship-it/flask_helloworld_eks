@@ -32,8 +32,7 @@ import time
 from .utils import (
     run_kubectl,
     get_service_url,
-    get_minikube_ip,
-    wait_for_pods_ready
+    get_minikube_ip
 )
 
 
@@ -66,7 +65,6 @@ class TestHealthEndpointDeployed:
         assert response.headers.get("Content-Type") == "application/json", \
             "Health endpoint should return JSON"
     
-    
     @pytest.mark.ingress
     def test_health_endpoint_via_ingress(self):
         """
@@ -90,7 +88,6 @@ class TestHealthEndpointDeployed:
         
         data = response.json()
         assert data == {"status": "healthy"}
-    
     
     @pytest.mark.nodeport
     def test_health_endpoint_performance_in_cluster(self):
@@ -129,7 +126,6 @@ class TestHealthEndpointDeployed:
         
         print(f"\n[Health Performance] Avg: {avg_latency:.3f}s, Max: {max_latency:.3f}s")
     
-    
     @pytest.mark.nodeport
     def test_health_consistency_across_replicas(self):
         """
@@ -157,7 +153,6 @@ class TestHealthEndpointDeployed:
                 f"Request {i} failed with status {resp['status_code']}"
             assert resp["content"] == {"status": "healthy"}, \
                 f"Request {i} returned different content: {resp['content']}"
-    
     
     @pytest.mark.nodeport
     def test_health_endpoint_during_pod_restart(self):
@@ -209,7 +204,6 @@ class TestHealthEndpointDeployed:
         assert response.status_code == 200
         assert response.json() == {"status": "healthy"}
     
-    
     @pytest.mark.nodeport
     def test_health_vs_root_response_time_comparison(self):
         """
@@ -241,7 +235,7 @@ class TestHealthEndpointDeployed:
         avg_health = sum(health_latencies) / len(health_latencies)
         avg_root = sum(root_latencies) / len(root_latencies)
         
-        print(f"\n[Latency Comparison]")
+        print("\n[Latency Comparison]")
         print(f"/health: {avg_health:.3f}s (avg)")
         print(f"/      : {avg_root:.3f}s (avg)")
         
@@ -249,7 +243,6 @@ class TestHealthEndpointDeployed:
         # Note: In this simple app they're similar, but principle holds
         assert avg_health <= avg_root * 1.5, \
             "/health should not be slower than / (health checks should be lightweight)"
-    
     
     @pytest.mark.nodeport
     def test_health_endpoint_without_readiness(self):
@@ -327,12 +320,11 @@ class TestHealthEndpointEducational:
         assert latency < liveness_config["timeoutSeconds"], \
             f"Health latency {latency:.3f}s exceeds timeout {liveness_config['timeoutSeconds']}s"
         
-        print(f"\n[Config Validation]")
+        print("\n[Config Validation]")
         print(f"Liveness probe: {liveness_config['httpGet']['path']}")
         print(f"Timeout: {liveness_config['timeoutSeconds']}s")
         print(f"Actual latency: {latency:.3f}s")
         print(f"Safety margin: {liveness_config['timeoutSeconds'] - latency:.3f}s")
-    
     
     @pytest.mark.educational
     def test_demonstrate_probe_frequency(self):
@@ -364,12 +356,12 @@ class TestHealthEndpointEducational:
         probes_per_minute_per_pod = 60 / period_seconds
         total_probes_per_minute = probes_per_minute_per_pod * replicas
         
-        print(f"\n[Probe Frequency Analysis]")
+        print("\n[Probe Frequency Analysis]")
         print(f"Period: Every {period_seconds}s")
         print(f"Replicas: {replicas}")
         print(f"Probes/min per pod: {probes_per_minute_per_pod}")
         print(f"Total probes/min: {total_probes_per_minute}")
-        print(f"\nImplication: /health must be fast and have no side effects!")
+        print("\nImplication: /health must be fast and have no side effects!")
         
         # Verify configuration (educational - should be flexible)
         assert period_seconds == 10, "Liveness probe period should be 10s"

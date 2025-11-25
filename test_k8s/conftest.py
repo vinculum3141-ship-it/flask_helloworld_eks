@@ -15,8 +15,7 @@ from .utils import (
     get_service,
     get_ingress,
     is_ci_environment,
-    print_debug_info,
-    KubectlError
+    print_debug_info
 )
 
 
@@ -113,7 +112,6 @@ def secret_name() -> str:
     return "hello-secrets"
 
 
-
 @pytest.fixture(scope="session")
 def label_selector() -> str:
     """
@@ -175,6 +173,7 @@ def deployment(deployment_name) -> Dict[str, Any]:
     dep = get_deployment(deployment_name)
     if not dep:
         pytest.skip(f"Deployment '{deployment_name}' not found")
+    assert dep is not None  # Type guard for Pylance
     return dep
 
 
@@ -223,6 +222,7 @@ def secret(secret_name):
         pytest.skip(f"Secret '{secret_name}' not found")
     return sec
 
+
 @pytest.fixture(scope="function")
 def service(service_name) -> Dict[str, Any]:
     """
@@ -241,6 +241,7 @@ def service(service_name) -> Dict[str, Any]:
     svc = get_service(service_name)
     if not svc:
         pytest.skip(f"Service '{service_name}' not found")
+    assert svc is not None  # Type guard for Pylance
     return svc
 
 
@@ -263,6 +264,7 @@ def ingress(ingress_name) -> Dict[str, Any]:
     ing = get_ingress(ingress_name)
     if not ing:
         pytest.skip(f"Ingress '{ingress_name}' not found")
+    assert ing is not None  # Type guard for Pylance
     return ing
 
 
