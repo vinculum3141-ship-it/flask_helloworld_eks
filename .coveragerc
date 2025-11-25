@@ -1,0 +1,34 @@
+[run]
+# Measure coverage for the Flask app
+source = app
+omit = 
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    */virtualenv/*
+
+[report]
+# Show missing lines in the report
+show_missing = True
+# Skip files with 100% coverage (optional - comment out to show all)
+# skip_covered = False
+# Precision for coverage percentage
+precision = 2
+# Exclude lines from coverage
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+
+[html]
+# Directory for HTML coverage report
+directory = htmlcov
+
+[xml]
+# XML output for CI/CD integration
+output = coverage.xml

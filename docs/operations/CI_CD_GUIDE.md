@@ -339,9 +339,8 @@ These scripts check:
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install dependencies
-pip install -r app/requirements.txt
-pip install pytest requests yamllint
+# Install all dependencies (production + development/testing)
+pip install -r app/requirements-dev.txt
 ```
 
 **Validation Steps**:

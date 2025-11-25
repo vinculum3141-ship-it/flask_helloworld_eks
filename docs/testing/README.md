@@ -18,8 +18,13 @@ This directory contains comprehensive testing docum- **[health-endpoint/HEALTH_E
 testing/
 ├── README.md (this file)              # Testing documentation index
 ├── UNIT_TEST_REFERENCE.md            # ✨ Quick reference for unit test intent
+├── TEST_COVERAGE_ANALYSIS.md         # 📊 Comprehensive coverage analysis
+├── TESTING_IMPROVEMENTS_SUMMARY.md   # 📈 Testing evolution timeline
 ├── TESTING_WORKFLOWS.md              # 🔄 Complete testing workflows and sequences
 ├── HEALTH_ENDPOINT_TESTING.md        # Health endpoint testing guide
+├── COVERAGE_GUIDE.md                 # 📊 Code coverage metrics guide (pytest-cov)
+├── REQUIREMENT_COVERAGE.md           # ✅ Test requirement coverage validation
+├── COVERAGE_IMPLEMENTATION.md        # 🔧 Coverage implementation details
 ├── architecture/                      # Test suite architecture
 │   ├── TEST_ARCHITECTURE.md          # Test suite design and organization
 │   └── TEST_REFACTORING.md           # Refactoring history and improvements
@@ -51,7 +56,13 @@ testing/
 **Need to understand a specific test?**
 - **[UNIT_TEST_REFERENCE.md](UNIT_TEST_REFERENCE.md)** - "What does this test do?" quick lookup
 - Test docstrings in `app/tests/test_app.py` - Primary source for test intent
-- `TEST_COVERAGE_ANALYSIS.md` (project root) - Comprehensive coverage analysis
+- **[TEST_COVERAGE_ANALYSIS.md](TEST_COVERAGE_ANALYSIS.md)** - Comprehensive coverage analysis
+
+**Need coverage metrics?**
+- **[COVERAGE_GUIDE.md](COVERAGE_GUIDE.md)** - Complete guide to code coverage (pytest-cov)
+- **[REQUIREMENT_COVERAGE.md](REQUIREMENT_COVERAGE.md)** - Test requirement validation
+- **[COVERAGE_IMPLEMENTATION.md](COVERAGE_IMPLEMENTATION.md)** - Implementation details
+- Run: `make test-coverage-html` (code) and `make validate-test-requirements` (requirements)
 
 **Need to make a decision?**
 - **[health-endpoint/HEALTH_ENDPOINT_TESTING_GUIDE.md § 3.4](health-endpoint/HEALTH_ENDPOINT_TESTING_GUIDE.md#34-test-suite-comparison--decision-guide)** - Test suite comparison and decision guide

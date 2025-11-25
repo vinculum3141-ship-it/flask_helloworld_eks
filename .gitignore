@@ -51,3 +51,22 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Python virtual environments
+venv/
+env/
+.venv/
+.env/
+virtualenv/
+
+# Python cache
+__pycache__/
+.pytest_cache/
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+

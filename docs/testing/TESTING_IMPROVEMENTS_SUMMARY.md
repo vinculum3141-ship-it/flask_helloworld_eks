@@ -201,12 +201,12 @@ This repository demonstrates **production-grade testing practices** with compreh
 → `docs/testing/README.md` (219 lines) - Test execution guide
 
 **"What changed recently?"**  
-→ `TESTING_IMPROVEMENTS_SUMMARY.md` (this file) - Evolution timeline
+→ `docs/testing/TESTING_IMPROVEMENTS_SUMMARY.md` (this file) - Evolution timeline
 
 ### Deep Dives
 
 **Unit Test Strategy**  
-→ `TEST_COVERAGE_ANALYSIS.md` § Unit Tests (Flask Application)
+→ `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Unit Tests (Flask Application)
 
 **Integration Tests**  
 → `test_k8s/README.md` (652 lines)  

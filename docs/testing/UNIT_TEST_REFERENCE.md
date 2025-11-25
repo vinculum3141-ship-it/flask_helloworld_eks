@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference for understanding what each unit test validates  
 **Primary Source**: Test docstrings in `app/tests/test_app.py`  
-**Detailed Analysis**: `TEST_COVERAGE_ANALYSIS.md` (root directory)  
+**Detailed Analysis**: `docs/testing/TEST_COVERAGE_ANALYSIS.md`  
 **Last Updated**: November 22, 2025
 
 ---
@@ -34,7 +34,7 @@ def test_ready_endpoint_http_methods(client):
 ---
 
 ### 2. **Test Coverage Analysis** (Comprehensive Reference) 📊
-**Location**: `TEST_COVERAGE_ANALYSIS.md` (project root)  
+**Location**: `docs/testing/TEST_COVERAGE_ANALYSIS.md`  
 **Purpose**: Complete coverage analysis and test strategy documentation  
 **Audience**: Technical leads, code reviewers, architects  
 **Detail Level**: Comprehensive - includes metrics, rationale, K8s alignment
@@ -152,7 +152,7 @@ grep -A 10 "^def test_ready" app/tests/test_app.py
 ---
 
 ### "How does this fit into our testing strategy?"
-**→ Read** `TEST_COVERAGE_ANALYSIS.md`
+**→ Read** `docs/testing/TEST_COVERAGE_ANALYSIS.md`
 - Complete coverage matrix
 - Parity analysis (/health vs /ready)
 - Educational value ratings
@@ -168,7 +168,7 @@ grep -A 10 "^def test_ready" app/tests/test_app.py
 ### "How does this relate to K8s probes?"
 **→ Check both**:
 1. Test docstring "Educational Note" (why probe timing matters)
-2. `TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
+2. `docs/testing/TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
 
 **K8s References in Tests**:
 ```python
@@ -186,7 +186,7 @@ readinessProbe:
 ---
 
 ### "What's the overall test strategy?"
-**→ Read** `docs/testing/README.md` + `TEST_COVERAGE_ANALYSIS.md`
+**→ Read** `docs/testing/README.md` + `docs/testing/TEST_COVERAGE_ANALYSIS.md`
 - Test architecture overview
 - Unit vs integration distinction
 - Current implementation status (9 tests for health, 9 for ready)
@@ -198,7 +198,7 @@ readinessProbe:
 ### Task: Writing a new test
 **Read**:
 1. Similar test docstring in `app/tests/test_app.py` (for pattern)
-2. `TEST_COVERAGE_ANALYSIS.md` § Test Architecture Analysis (for patterns)
+2. `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Test Architecture Analysis (for patterns)
 
 **Pattern to follow**:
 ```python
@@ -218,8 +218,8 @@ def test_new_feature(client):
 
 ### Task: Understanding test coverage
 **Read**:
-1. `TEST_COVERAGE_ANALYSIS.md` § Coverage Matrix
-2. `TEST_COVERAGE_ANALYSIS.md` § Current Test Coverage Summary
+1. `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Coverage Matrix
+2. `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Current Test Coverage Summary
 
 **Shows**: 22 total tests, 100% parity between /health and /ready
 
@@ -228,7 +228,7 @@ def test_new_feature(client):
 ### Task: Understanding K8s probe testing
 **Read**:
 1. Test docstrings with "Educational Note" mentioning K8s
-2. `TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
+2. `docs/testing/TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
 3. `k8s/deployment.yaml` (actual probe configuration)
 
 **Key tests**:
@@ -241,7 +241,7 @@ def test_new_feature(client):
 ### Task: Code review
 **Check**:
 1. Test docstring quality (is intent clear?)
-2. `TEST_COVERAGE_ANALYSIS.md` coverage matrix (any gaps?)
+2. `docs/testing/TEST_COVERAGE_ANALYSIS.md` coverage matrix (any gaps?)
 3. Educational notes (are K8s implications explained?)
 
 ---
@@ -250,7 +250,7 @@ def test_new_feature(client):
 **Point them to**:
 1. `docs/testing/README.md` (testing overview)
 2. `app/tests/test_app.py` (read test docstrings)
-3. `TEST_COVERAGE_ANALYSIS.md` (detailed strategy)
+3. `docs/testing/TEST_COVERAGE_ANALYSIS.md` (detailed strategy)
 
 **Reading order**:
 1. Testing README → Understand test organization
@@ -289,7 +289,7 @@ def test_new_feature(client):
 - `test_*_performance` docstrings → Timing requirements
 - `test_*_http_methods` docstrings → GET-only requirement
 - `test_*_consistency` docstrings → Probe frequency (periodSeconds)
-- `TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
+- `docs/testing/TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
 
 **Example** (`test_ready_endpoint_performance`):
 ```python
@@ -305,7 +305,7 @@ Slow responses can delay pod receiving traffic.
 **Where documented**:
 - `test_*_consistency` docstrings → Idempotent behavior
 - `test_*_no_side_effects` docstrings → Stateless requirement
-- `TEST_COVERAGE_ANALYSIS.md` § Advanced Testing Patterns
+- `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Advanced Testing Patterns
 
 **Example** (`test_ready_endpoint_consistency`):
 ```python
@@ -321,7 +321,7 @@ idempotent and stateless.
 ### HTTP Caching & Traffic Routing
 **Where documented**:
 - `test_*_cache_control_detailed` docstrings → Complete cache explanation
-- `TEST_COVERAGE_ANALYSIS.md` § Cache Validation Pattern
+- `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Cache Validation Pattern
 
 **Example** (`test_ready_endpoint_cache_control_detailed`):
 ```python
@@ -339,7 +339,7 @@ Dangerous Scenario - Cached "ready" response when pod is NOT ready:
 ### Liveness vs Readiness Differences
 **Where documented**:
 - `test_ready_vs_health_independence` docstring → Purpose distinction
-- `TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
+- `docs/testing/TEST_COVERAGE_ANALYSIS.md` § K8s Integration Validation
 
 **Example**:
 ```python
@@ -358,14 +358,14 @@ Educational Note:
 
 **In test docstrings**, you'll find references to:
 - K8s configuration: "periodSeconds: 5" → see `k8s/deployment.yaml`
-- Probe frequency: "576 calls/day" → see calculation in `TEST_COVERAGE_ANALYSIS.md`
-- Test patterns: "Idempotency" → see `TEST_COVERAGE_ANALYSIS.md` § Advanced Testing Patterns
+- Probe frequency: "576 calls/day" → see calculation in `docs/testing/TEST_COVERAGE_ANALYSIS.md`
+- Test patterns: "Idempotency" → see `docs/testing/TEST_COVERAGE_ANALYSIS.md` § Advanced Testing Patterns
 
 ---
 
 ### From Documentation to Test Code
 
-**In `TEST_COVERAGE_ANALYSIS.md`**, you'll find:
+**In `docs/testing/TEST_COVERAGE_ANALYSIS.md`**, you'll find:
 - Test names linking to line numbers in `app/tests/test_app.py`
 - "What It Tests" sections → expanded from test docstrings
 - Code snippets → extracted from actual test implementations
@@ -402,7 +402,7 @@ Educational Note:
 
 1. **Update in order**:
    - First: Test docstring in `app/tests/test_app.py`
-   - Then: `TEST_COVERAGE_ANALYSIS.md` if coverage changed
+   - Then: `docs/testing/TEST_COVERAGE_ANALYSIS.md` if coverage changed
    - Finally: This reference guide if structure changed
 
 2. **Keep synchronized**:
@@ -419,7 +419,7 @@ Educational Note:
 | Level | Location | Purpose | When to Use |
 |-------|----------|---------|-------------|
 | **Quick** | Test docstrings | Immediate context | While coding |
-| **Detailed** | `TEST_COVERAGE_ANALYSIS.md` | Strategy & metrics | Planning, review |
+| **Detailed** | `docs/testing/TEST_COVERAGE_ANALYSIS.md` | Strategy & metrics | Planning, review |
 | **Structural** | `docs/testing/README.md` | Architecture | Learning test infrastructure |
 
 ### Finding Answers

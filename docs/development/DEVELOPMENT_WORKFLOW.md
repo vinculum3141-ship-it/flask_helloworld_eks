@@ -121,8 +121,8 @@ make validate-workflow
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install validation tools
-pip install yamllint
+# Install development and validation tools
+pip install -r app/requirements-dev.txt
 
 # Install GitHub CLI (Ubuntu/Debian)
 sudo apt install gh -y
@@ -235,7 +235,7 @@ gh workflow view "Flask CI/CD Pipeline"
 git checkout -b feature/my-feature
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r app/requirements.txt pytest requests
+pip install -r app/requirements-dev.txt  # Installs all dev/test dependencies
 
 # 2. Make changes to code
 # ... edit files ...
@@ -337,12 +337,12 @@ chmod +x scripts/*.sh
 
 **Symptom**:
 ```
-⚠️  yamllint not found - install with: pip install yamllint
+⚠️  yamllint not found - install with: pip install -r app/requirements-dev.txt
 ```
 
 **Solution**:
 ```bash
-pip install yamllint
+pip install -r app/requirements-dev.txt
 ```
 
 #### 4. **kubectl Not Available**
@@ -397,11 +397,12 @@ gh auth login
 
 | Tool | Purpose | Install Command |
 |------|---------|----------------|
-| `yamllint` | YAML syntax validation | `pip install yamllint` |
+| Dev dependencies | All Python dev/test tools | `pip install -r app/requirements-dev.txt` |
 | `kubectl` | Kubernetes manifest validation | See [kubectl docs](https://kubernetes.io/docs/tasks/tools/) |
 | `gh` | GitHub CLI for workflows | `sudo apt install gh` |
-| `pytest` | Python test runner | `pip install pytest` |
 | `docker` | Container build testing | See [Docker docs](https://docs.docker.com/get-docker/) |
+
+**Note:** `requirements-dev.txt` includes: pytest, pytest-cov, requests, yamllint
 
 ### Script Exit Codes
 

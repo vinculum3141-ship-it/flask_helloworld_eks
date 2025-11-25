@@ -41,11 +41,12 @@ Make sure you have installed:
 Also, ensure Python packages for testing are installed:
 
 ```bash
-# Install Flask app dependencies
+# Install Flask app dependencies (production)
 pip install -r app/requirements.txt
 
-# Install testing dependencies
-pip install pytest requests yamllint
+# Install all development and testing dependencies
+# (includes pytest, pytest-cov, requests, yamllint)
+pip install -r app/requirements-dev.txt
 ```
 
 **Required packages:**
@@ -497,7 +498,7 @@ make validate-all       # Run all validations
 
 # Composite targets
 make full-deploy     # Build → deploy → smoke test
-make release-prep    # Complete release workflow: validate → test-full → build → deploy → smoke test
+make release-prep    # Complete release workflow: validate structure/workflow → verify test requirements → test-full → build → deploy → smoke test
 make help            # Show all commands
 ```
 

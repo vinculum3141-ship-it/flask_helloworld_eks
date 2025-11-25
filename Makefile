@@ -41,6 +41,26 @@ smoke-test:
 unit-tests:
 	@bash scripts/unit_tests.sh
 
+# Coverage tests
+test-coverage:
+	@bash scripts/coverage_test.sh terminal
+
+test-coverage-html:
+	@bash scripts/coverage_test.sh html
+
+test-coverage-xml:
+	@bash scripts/coverage_test.sh xml
+
+test-coverage-all:
+	@bash scripts/coverage_test.sh all
+
+# Test requirement coverage validation
+validate-test-requirements:
+	@python scripts/validate_test_coverage.py
+
+validate-test-requirements-verbose:
+	@python scripts/validate_test_coverage.py --verbose
+
 # Educational tests (Ingress concepts)
 educational-tests:
 	@echo "Running educational Ingress tests..."
@@ -142,24 +162,28 @@ release-prep:
 	@echo "🚀 RELEASE PREPARATION WORKFLOW"
 	@echo "=========================================="
 	@echo ""
-	@echo "Step 1/5: Repository Validation"
+	@echo "Step 1/6: Repository Validation"
 	@echo "------------------------------------------"
 	@bash scripts/validate_repo_structure.sh
 	@bash scripts/validate_workflow.sh
 	@echo ""
-	@echo "Step 2/5: Running Full Test Suite"
+	@echo "Step 2/6: Test Requirement Coverage"
+	@echo "------------------------------------------"
+	@python scripts/validate_test_coverage.py
+	@echo ""
+	@echo "Step 3/6: Running Full Test Suite"
 	@echo "------------------------------------------"
 	@$(MAKE) test-full
 	@echo ""
-	@echo "Step 3/5: Building Docker Image"
+	@echo "Step 4/6: Building Docker Image"
 	@echo "------------------------------------------"
 	@bash scripts/build_image.sh
 	@echo ""
-	@echo "Step 4/5: Deploying to Local Cluster"
+	@echo "Step 5/6: Deploying to Local Cluster"
 	@echo "------------------------------------------"
 	@bash scripts/deploy_local.sh
 	@echo ""
-	@echo "Step 5/5: Final Smoke Test"
+	@echo "Step 6/6: Final Smoke Test"
 	@echo "------------------------------------------"
 	@bash scripts/smoke_test.sh
 	@echo ""
@@ -168,9 +192,15 @@ release-prep:
 	@echo "=========================================="
 	@echo ""
 	@echo "📋 RELEASE CHECKLIST:"
+	@echo "  [✓] Repository structure validated"
+	@echo "  [✓] Development workflow validated"
+	@echo "  [✓] Test requirement coverage validated (22/22 tests present)"
+	@echo "  [✓] All tests passed (unit + integration)"
+	@echo "  [✓] Docker image built successfully"
+	@echo "  [✓] Application deployed to local cluster"
+	@echo "  [✓] Smoke test passed"
 	@echo "  [ ] Review and update CHANGELOG.md"
 	@echo "  [ ] Update version numbers (if applicable)"
-	@echo "  [ ] Verify all tests passed above"
 	@echo "  [ ] Commit all changes: git add . && git commit -m 'Release vX.Y.Z'"
 	@echo "  [ ] Create git tag: git tag -a vX.Y.Z -m 'Release vX.Y.Z'"
 	@echo "  [ ] Push changes: git push origin main"
@@ -190,10 +220,16 @@ help:
 	@echo "  deploy        - Deploy to local cluster"
 	@echo "  delete        - Delete local deployment"
 	@echo "  full-deploy   - Build, deploy, and run smoke tests"
-	@echo "  release-prep  - Complete release preparation workflow (validate, test-full, build, deploy, smoke)"
+	@echo "  release-prep  - Complete release preparation workflow (validate structure & workflow, verify test requirements, test-full, build, deploy, smoke)"
 	@echo ""
 	@echo "Testing:"
 	@echo "  unit-tests           - Run unit tests"
+	@echo "  test-coverage        - Run unit tests with coverage (terminal report)"
+	@echo "  test-coverage-html   - Run unit tests with HTML coverage report"
+	@echo "  test-coverage-xml    - Run unit tests with XML coverage report (CI/CD)"
+	@echo "  test-coverage-all    - Run unit tests with all coverage formats"
+	@echo "  validate-test-requirements - Validate all documented tests are implemented"
+	@echo "  validate-test-requirements-verbose - Same with detailed test listing"
 	@echo "  k8s-tests            - Run k8s integration tests (excludes manual & educational)"
 	@echo "  educational-tests    - Run educational Ingress tests (hostname routing, consistency, load balancing)"
 	@echo "  ingress-tests        - Run all Ingress tests (basic + educational)"

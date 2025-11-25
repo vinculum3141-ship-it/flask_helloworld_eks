@@ -361,8 +361,8 @@ Tests with high educational value include:
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `TEST_COVERAGE_ANALYSIS.md` | 1,614 | This comprehensive analysis |
-| `TESTING_IMPROVEMENTS_SUMMARY.md` | 583 | Summary of improvements |
+| `docs/testing/TEST_COVERAGE_ANALYSIS.md` | 1,614 | This comprehensive analysis |
+| `docs/testing/TESTING_IMPROVEMENTS_SUMMARY.md` | 583 | Summary of improvements |
 | `docs/testing/README.md` | 219 | Testing overview |
 | `docs/testing/UNIT_TEST_REFERENCE.md` | 463 | Unit test reference |
 | `docs/testing/TESTING_WORKFLOWS.md` | 392 | Workflow guide |
@@ -554,7 +554,7 @@ Tests with high educational value include:
 ### Key Documentation
 
 - **This file**: Complete analysis (you are here)
-- **Summary**: `TESTING_IMPROVEMENTS_SUMMARY.md` (583 lines)
+- **Summary**: `docs/testing/TESTING_IMPROVEMENTS_SUMMARY.md` (583 lines)
 - **Reference**: `docs/testing/UNIT_TEST_REFERENCE.md` (463 lines)
 - **Index**: `docs/testing/README.md` (219 lines)
 

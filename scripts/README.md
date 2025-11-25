@@ -85,6 +85,40 @@ bash scripts/unit_tests.sh
 
 ---
 
+#### `coverage_test.sh`
+**Purpose:** Run unit tests with coverage metrics.
+
+**What it does:**
+- Runs pytest with coverage tracking via pytest-cov
+- Generates coverage reports in multiple formats
+- Shows which code lines are tested and which are missing
+
+**Usage:**
+```bash
+# Terminal report (default)
+bash scripts/coverage_test.sh terminal
+
+# HTML report (interactive, detailed)
+bash scripts/coverage_test.sh html
+
+# XML report (for CI/CD)
+bash scripts/coverage_test.sh xml
+
+# All formats
+bash scripts/coverage_test.sh all
+```
+
+**Output:**
+- Terminal: Coverage % and missing line numbers
+- HTML: Interactive report in `htmlcov/index.html`
+- XML: Machine-readable `coverage.xml`
+
+**Duration:** ~2-3 seconds (slightly slower than plain unit tests)
+
+**See also:** `docs/testing/COVERAGE_GUIDE.md` for detailed documentation
+
+---
+
 #### `k8s_tests.sh`
 **Purpose:** Run Kubernetes integration tests (automated suite only).
 
@@ -528,6 +562,10 @@ make delete          # Delete local deployment (runs delete_local.sh)
 **Individual Test Targets:**
 ```bash
 make unit-tests           # Run unit tests (runs unit_tests.sh)
+make test-coverage        # Run unit tests with coverage (terminal report)
+make test-coverage-html   # Run unit tests with HTML coverage report
+make test-coverage-xml    # Run unit tests with XML coverage (for CI/CD)
+make test-coverage-all    # Run unit tests with all coverage formats
 make k8s-tests            # Run K8s integration tests (runs k8s_tests.sh)
 make educational-tests    # Run educational Ingress tests only
 make ingress-tests        # Run all Ingress tests (basic + educational)
@@ -583,7 +621,7 @@ These targets run multiple steps in sequence:
 make full-deploy     # Complete workflow: build → deploy → smoke test
 make test-all        # Run automated tests (unit + k8s, excludes manual)
 make test-full       # Run ALL tests including manual, educational, and nodeport
-make release-prep    # Complete release preparation: validate-all → test-full → build → deploy → smoke test
+make release-prep    # Complete release preparation: validate structure/workflow → verify test requirements → test-full → build → deploy → smoke test
 ```
 
 ### Complete Makefile Reference
@@ -614,7 +652,7 @@ make release-prep    # Complete release preparation: validate-all → test-full 
 | `test-all` | Composite | Run unit + k8s tests (automated) |
 | `test-full` | Composite | Run ALL tests (includes manual, educational, nodeport) |
 | `full-deploy` | Composite | Build + deploy + smoke test |
-| `release-prep` | Composite | Complete release: validate + test-full + build + deploy + smoke |
+| `release-prep` | Composite | Complete release: validate structure/workflow + verify test requirements + test-full + build + deploy + smoke |
 | `help` | Display help | Show all available targets |
 
 ### Benefits of Using Makefile
@@ -782,11 +820,12 @@ git push origin v1.1.0
 
 **What `make release-prep` does:**
 1. ✅ Validates repository structure and GitHub Actions workflow
-2. ✅ Runs ALL tests (unit, k8s, educational, nodeport, manual)
-3. ✅ Builds production Docker image
-4. ✅ Deploys to local cluster
-5. ✅ Runs final smoke tests
-6. ✅ Displays comprehensive release checklist
+2. ✅ Validates test requirement coverage (22/22 documented tests present)
+3. ✅ Runs ALL tests (unit, k8s, educational, nodeport, manual)
+4. ✅ Builds production Docker image
+5. ✅ Deploys to local cluster
+6. ✅ Runs final smoke tests
+7. ✅ Displays comprehensive release checklist
 
 ### Development Workflow
 
