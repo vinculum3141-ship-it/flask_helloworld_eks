@@ -73,17 +73,25 @@ Allows on-demand execution with custom parameters:
 ### Stage 2: Build Validation
 **Duration**: ~1 minute
 
-Early validation before expensive Docker build:
+Early validation before expensive Docker build (shift-left testing):
 
-- ✅ **Step 4: Validate repository structure**
+- ✅ **Step 4: Python Linting (Shift-Left Testing)**
+  - Command: `make lint`
+  - Tool: flake8
+  - Catches syntax errors, unused imports, code quality issues
+  - **Why**: Fails fast before expensive build operations (saves ~10 minutes)
+  - Configuration: `.flake8`
+
+- ✅ **Step 5: Validate repository structure**
   - Script: `scripts/validate_repo_structure.sh`
   - Verifies all required directories and files exist
   - Fails fast if project structure is incorrect
 
-- ✅ **Step 5: Validate workflow configuration**
+- ✅ **Step 6: Validate workflow configuration**
   - Script: `scripts/validate_workflow.sh`
-  - Checks GitHub Actions workflow syntax
+  - Checks GitHub Actions workflow syntax with yamllint
   - Ensures CI/CD pipeline configuration is valid
+  - Configuration: `.yamllint`
 
 ### Stage 3: Build
 **Duration**: ~10 minutes

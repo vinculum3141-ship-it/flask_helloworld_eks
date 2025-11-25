@@ -41,6 +41,20 @@ smoke-test:
 unit-tests:
 	@bash scripts/unit_tests.sh
 
+# Linting (shift-left testing - catch errors early)
+lint:
+	@echo "🔍 Running Python linting (shift-left testing)..."
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@if command -v flake8 >/dev/null 2>&1; then \
+		echo "Linting Python code with flake8..."; \
+		flake8 app/ test_k8s/ scripts/*.py || (echo "❌ Linting failed - fix errors before committing" && exit 1); \
+		echo "✅ All Python code passes linting checks"; \
+	else \
+		echo "⚠️  flake8 not installed. Install with:"; \
+		echo "   pip install -r app/requirements-dev.txt"; \
+		exit 1; \
+	fi
+
 # Coverage tests
 test-coverage:
 	@bash scripts/coverage_test.sh terminal

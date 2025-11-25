@@ -45,7 +45,7 @@ Also, ensure Python packages for testing are installed:
 pip install -r app/requirements.txt
 
 # Install all development and testing dependencies
-# (includes pytest, pytest-cov, requests, yamllint)
+# (includes pytest, pytest-cov, requests, yamllint, flake8)
 pip install -r app/requirements-dev.txt
 ```
 
@@ -318,6 +318,32 @@ For a comprehensive understanding of how liveness and readiness probes work, inc
 - Best practices
 
 See: **[docs/PROBES_GUIDE.md](docs/PROBES_GUIDE.md)** 📚
+
+## Code Quality & Linting
+
+This project uses **shift-left testing** - catching errors early before they reach later pipeline stages.
+
+### Python Linting (flake8)
+```bash
+make lint
+```
+
+Checks Python code for:
+- ✅ Syntax errors and undefined variables
+- ✅ Unused imports and variables
+- ✅ Code complexity and PEP 8 compliance
+- ✅ Common code quality issues
+
+Configuration: `.flake8`
+
+### YAML Validation (yamllint)
+YAML files (Kubernetes manifests, workflows) are automatically validated with yamllint.
+
+Configuration: `.yamllint`
+
+**Why This Matters:** Linting runs as the 4th step in the CI/CD pipeline, catching errors before expensive build and test operations. This saves time and provides faster feedback.
+
+See: **[docs/development/CODE_QUALITY.md](docs/development/CODE_QUALITY.md)** for details.
 
 ## Run Tests
 

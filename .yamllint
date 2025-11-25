@@ -1,0 +1,61 @@
+---
+# yamllint configuration for GitHub Actions workflows
+# This configuration balances code quality with the practical needs of CI/CD pipelines
+
+extends: default
+
+rules:
+  # Line length: GitHub Actions workflows often have long conditional expressions
+  # and shell commands. Allow up to 160 characters with warnings beyond 120.
+  line-length:
+    max: 160
+    level: warning
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # Document start: GitHub Actions workflows don't require the --- marker
+  # at the start, and it's more common to omit it in the community.
+  document-start:
+    present: false
+
+  # Truthy values: Allow common GitHub Actions syntax like 'on:', 'off'
+  # in addition to strict true/false booleans.
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
+    check-keys: false  # Don't check keys like 'on:' in workflow triggers
+
+  # Comments: Allow comments to be more flexible for documentation
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: true
+    ignore-shebangs: true
+
+  # Indentation: Standard 2-space indentation for YAML
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Empty lines: Be lenient with empty lines in long workflows
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+
+  # Brackets: Allow flexible bracket spacing for readability
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  # Allow trailing spaces in multi-line strings (common in shell commands)
+  trailing-spaces:
+    level: warning
+
+# Ignore patterns for files that shouldn't be linted
+ignore: |
+  .github/
+  node_modules/
+  venv/
+  htmlcov/

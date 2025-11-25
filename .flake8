@@ -1,0 +1,52 @@
+# Flake8 configuration for educational Python linting
+# This demonstrates shift-left testing by catching common errors early
+# Configuration is intentionally minimal - focuses on real issues, not style
+
+[flake8]
+# Maximum line length - be reasonable but not draconian
+max-line-length = 100
+
+# Exclude common directories that shouldn't be linted
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    htmlcov,
+    .pytest_cache,
+    *.egg-info,
+    build,
+    dist
+
+# Error codes to ignore (keep minimal for training purposes)
+# E501: Line too long (we set max-line-length instead)
+# W503: Line break before binary operator (conflicts with modern style)
+# W504: Line break after binary operator (style preference)
+# W293: Blank line contains whitespace (minor formatting issue)
+# W291: Trailing whitespace (minor formatting issue)
+# W391: Blank line at end of file (minor formatting issue)
+# W292: No newline at end of file (minor formatting issue)
+ignore = E501,W503,W504,W293,W291,W391,W292
+
+# Only show errors, not warnings (keeps output focused)
+# Remove this line to see all warnings for stricter checking
+# quiet = 1
+
+# Error codes to specifically check (educational focus)
+# E9: Runtime errors (syntax errors, undefined names, etc.)
+# F: PyFlakes errors (undefined variables, unused imports, etc.)
+# W: Warning level issues
+select = E,F,W
+
+# Maximum complexity - catches overly complex functions
+# 10 is a reasonable default for simple projects
+max-complexity = 10
+
+# Show source code for each error (educational)
+show-source = True
+
+# Show statistics at the end
+statistics = True
+
+# Count errors
+count = True

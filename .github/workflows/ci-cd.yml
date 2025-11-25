@@ -120,21 +120,30 @@ jobs:
           # Add venv to PATH for subsequent steps
           echo "$PWD/.venv/bin" >> $GITHUB_PATH
         
-      # --- Step 4: Validate Repository Structure ---
+      # --- Step 4: Python Linting (Shift-Left Testing) ---
+      - name: Lint Python code
+        timeout-minutes: 5
+        run: |
+          echo "🔍 Running Python linting (shift-left testing)..."
+          echo "This catches errors early before they reach later pipeline stages"
+          source .venv/bin/activate
+          make lint
+
+      # --- Step 5: Validate Repository Structure ---
       - name: Validate repository structure
         timeout-minutes: 5
         run: |
           echo "Validating repository structure and required files..."
           bash scripts/validate_repo_structure.sh
 
-      # --- Step 5: Validate Workflow Configuration ---
+      # --- Step 6: Validate Workflow Configuration ---
       - name: Validate workflow configuration
         timeout-minutes: 5
         run: |
           echo "Validating GitHub Actions workflow configuration..."
           bash scripts/validate_workflow.sh
         
-      # --- Step 6: Setup Docker & Minikube ---
+      # --- Step 7: Setup Docker & Minikube ---
       - name: Setup Docker
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
         with:
@@ -166,7 +175,7 @@ jobs:
           
           echo "✓ Ingress controller is ready"
           
-      # --- Step 7: Docker layer caching (guarded) ---
+      # --- Step 8: Docker layer caching (guarded) ---
       # Prepare buildx cache directories so build works even without a restored cache
       - name: Prepare buildx cache dirs
         run: mkdir -p /tmp/.buildx-cache /tmp/.buildx-cache-new
@@ -187,7 +196,7 @@ jobs:
       # (type=local). Attempting to use --cache-to/--cache-from with type=local causes buildx to exit with:
       #   "Cache export is not supported for the docker driver. Switch to a different driver, or turn on the containerd image store..."
       # The restore step is kept here for future use if we switch to a cache-capable driver; it is guarded and non-blocking.
-      # --- Step 8: Build Docker Image ---
+      # --- Step 9: Build Docker Image ---
       - name: Build Docker image
         timeout-minutes: 15
         run: |
@@ -201,13 +210,13 @@ jobs:
             -t ${{ env.DOCKER_IMAGE_NAME }}:latest \
             app/
 
-      # --- Step 9: Deploy app with Ingress (skip for PRs) ---
+      # --- Step 10: Deploy app with Ingress (skip for PRs) ---
       - name: Deploy app
         timeout-minutes: 10
         if: ${{ github.event_name != 'pull_request' }}  # Skip deployment for PRs
         run: bash scripts/deploy_local.sh
 
-      # --- Step 10: Wait for deployment readiness ---
+      # --- Step 11: Wait for deployment readiness ---
       - name: Wait for deployment to be ready
         if: ${{ github.event_name != 'pull_request' }}
         timeout-minutes: 5
@@ -254,14 +263,14 @@ jobs:
           echo "=== Ingress Nginx Logs (last 20 lines) ==="
           kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --tail=20 || echo "Could not fetch ingress logs"
           
-      # --- Step 11: Run Unit Tests ---
+      # --- Step 12: Run Unit Tests ---
       - name: Run unit tests
         id: unit-tests
         timeout-minutes: 10
         continue-on-error: true  # Don't stop workflow if unit tests fail
         run: bash scripts/unit_tests.sh
 
-      # --- Step 12: Run Kubernetes-level tests ---
+      # --- Step 13: Run Kubernetes-level tests ---
       - name: Run Kubernetes tests
         id: k8s-tests
         if: ${{ github.event_name != 'pull_request' }}
@@ -269,7 +278,7 @@ jobs:
         continue-on-error: true  # Don't stop workflow if K8s tests fail
         run: bash scripts/k8s_tests.sh
 
-      # --- Step 13: Run Smoke Tests (conditional) ---
+      # --- Step 14: Run Smoke Tests (conditional) ---
       # Runs smoke tests by default, but can be skipped via manual trigger input
       # Condition: Always run unless manually triggered with run_smoke_tests=false
       - name: Run smoke tests
@@ -279,7 +288,7 @@ jobs:
         continue-on-error: true  # Don't stop workflow if smoke tests fail
         run: bash scripts/smoke_test.sh
 
-      # --- Step 14: Upload test artifacts ---
+      # --- Step 15: Upload test artifacts ---
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()  # Upload even if tests failed
@@ -291,14 +300,14 @@ jobs:
             *.log
           retention-days: 30
 
-      # --- Step 15: Cleanup (Always Runs) ---
+      # --- Step 16: Cleanup (Always Runs) ---
       # This step runs regardless of previous step failures to ensure resource cleanup
       - name: Cleanup Minikube resources
         if: always()  # Always run cleanup, even if previous steps failed
         timeout-minutes: 5
         run: bash scripts/delete_local.sh
 
-      # --- Step 16: Report Test Results ---
+      # --- Step 17: Report Test Results ---
       # Check if any tests failed and fail the workflow accordingly
       - name: Check test results and report status
         if: always()  # Always run to properly report final status

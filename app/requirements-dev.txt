@@ -12,9 +12,11 @@ pytest-cov==4.1.0
 requests==2.31.0          # HTTP client for K8s API and service testing
 yamllint==1.32.0          # YAML validation for K8s manifests
 
+# Linting and code quality (shift-left testing)
+flake8==6.1.0              # Python linting - catches common errors early
+
 # Optional: Additional development tools (uncomment as needed)
 # pytest-xdist==3.3.1      # Parallel test execution
 # pytest-mock==3.11.1      # Mocking utilities
 # black==23.7.0            # Code formatter
-# flake8==6.1.0            # Linting
 # mypy==1.4.1              # Type checking

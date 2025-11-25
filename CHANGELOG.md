@@ -1,25 +1,6 @@
-# Changelog### Added
-- Test coverage metrics using `pytest-cov`
-  - Added `.coveragerc` configuration file
-  - Added `scripts/coverage_test.sh` for generating coverage reports
-  - Added `make test-coverage*` targets (terminal, HTML, XML, all formats)
-  - Added comprehensive coverage documentation (`docs/testing/COVERAGE_GUIDE.md`)
-  - Added implementation details (`docs/testing/COVERAGE_IMPLEMENTATION.md`)
-- Dual coverage validation system
-  - Added `scripts/validate_test_coverage.py` for requirement coverage validation
-  - Added `make validate-test-requirements` targets (normal and verbose modes)
-  - Added comprehensive requirement coverage guide (`docs/testing/REQUIREMENT_COVERAGE.md`)
-  - Integrated requirement validation into `make release-prep` workflow (Step 2/6)
-  - Validates that all 22 documented tests in TEST_COVERAGE_ANALYSIS.md are implemented
-- Separated development dependencies from production dependencies
-  - Created `app/requirements-dev.txt` for development/testing dependencies
-  - Includes: pytest, pytest-cov, requests, yamllint
-  - Production `app/requirements.txt` remains clean (Flask only)
-- Documentation improvements
-  - Created `app/README.md` explaining requirements files structure
-  - Reorganized testing documentation into `docs/testing/` folder
-  - Moved `TEST_COVERAGE_ANALYSIS.md` to `docs/testing/`
-  - Moved `TESTING_IMPROVEMENTS_SUMMARY.md` to `docs/testing/`anges to this project will be documented in this file.
+# Changelog
+
+All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -29,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Code Quality & Linting (Shift-Left Testing)**
+  - Added Python linting with flake8
+    - Created `.flake8` configuration file with educational rules
+    - Added `make lint` target for local development
+    - Integrated as Step 4 in CI/CD pipeline (early validation)
+    - Added `flake8==6.1.0` to `app/requirements-dev.txt`
+  - Added YAML validation with yamllint
+    - Created `.yamllint` configuration file optimized for GitHub Actions
+    - Configured for 160-char line length (practical for CI/CD workflows)
+    - Updated `scripts/validate_workflow.sh` to use `.yamllint` config
+  - Added comprehensive documentation
+    - Created `docs/development/CODE_QUALITY.md` - Complete linting guide
+    - Updated `README.md` with "Code Quality & Linting" section
+    - Updated `docs/operations/CI_CD_GUIDE.md` with linting pipeline details
+    - Updated `docs/development/README.md` index
+  - Demonstrates shift-left testing pattern (catch errors early, save time)
 - Test coverage metrics using `pytest-cov`
   - Added `.coveragerc` configuration file
   - Added `scripts/coverage_test.sh` for generating coverage reports
@@ -37,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added implementation details (`docs/testing/COVERAGE_IMPLEMENTATION.md`)
 - Separated development dependencies from production dependencies
   - Created `app/requirements-dev.txt` for development/testing dependencies
-  - Includes: pytest, pytest-cov, requests, yamllint
+  - Includes: pytest, pytest-cov, requests, yamllint, flake8
   - Production `app/requirements.txt` remains clean (Flask only)
 - Documentation improvements
   - Created `app/README.md` explaining requirements files structure
@@ -46,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Moved `TESTING_IMPROVEMENTS_SUMMARY.md` to `docs/testing/`
 
 ### Changed
+- Enhanced CI/CD pipeline
+  - Renumbered workflow steps after adding linting (Step 4)
+  - Linting now runs before expensive build operations
+  - Faster feedback on code quality issues (~10 minute savings on errors)
 - Enhanced `make release-prep` workflow
   - Added test requirement coverage validation as Step 2/6
   - Now runs 6 steps: validate structure/workflow → verify test requirements → test-full → build → deploy → smoke

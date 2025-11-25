@@ -70,12 +70,22 @@ echo -e "${BLUE}🔍 YAML Syntax Validation${NC}"
 echo "-------------------------"
 if command_exists yamllint; then
     echo "Running yamllint..."
-    if yamllint "$WORKFLOW_FILE" \
-        --config-data '{extends: default, rules: {line-length: {max: 120}, trailing-spaces: disable, comments: {min-spaces-from-content: 1}}}' 2>&1; then
-        log_success "YAML syntax is valid"
+    # Use .yamllint config file if it exists, otherwise use inline config
+    if [ -f .yamllint ]; then
+        if yamllint "$WORKFLOW_FILE" 2>&1; then
+            log_success "YAML syntax is valid"
+        else
+            log_warning "YAML has formatting issues but may still work"
+            WARNINGS=$((WARNINGS + 1))
+        fi
     else
-        log_warning "YAML has formatting issues but may still work"
-        WARNINGS=$((WARNINGS + 1))
+        if yamllint "$WORKFLOW_FILE" \
+            --config-data '{extends: default, rules: {line-length: {max: 120}, trailing-spaces: disable, comments: {min-spaces-from-content: 1}}}' 2>&1; then
+            log_success "YAML syntax is valid"
+        else
+            log_warning "YAML has formatting issues but may still work"
+            WARNINGS=$((WARNINGS + 1))
+        fi
     fi
 else
     log_warning "yamllint not found - install with: pip install yamllint"

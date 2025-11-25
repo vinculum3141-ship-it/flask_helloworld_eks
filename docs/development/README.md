@@ -14,6 +14,14 @@ This directory contains documentation for development processes and workflows.
   - Testing requirements
   - Deployment procedures
 
+### Code Quality & Linting
+- **[CODE_QUALITY.md](CODE_QUALITY.md)** - Code quality tools and shift-left testing
+  - Python linting with flake8
+  - YAML validation with yamllint
+  - Shift-left testing principles
+  - CI/CD integration
+  - Best practices
+
 ### Changelog Management
 - **[CHANGELOG_GUIDE.md](CHANGELOG_GUIDE.md)** - Changelog maintenance guide
   - Manual changelog (recommended for releases)
