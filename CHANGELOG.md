@@ -10,6 +10,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Observability Features (Educational)**
+  - Added three-tier observability approach for learning Kubernetes monitoring
+  - **Tier 1: Kubernetes Metrics (Resource Monitoring)**
+    - Documented metrics-server addon usage (`kubectl top nodes/pods`)
+    - Shows CPU and memory consumption for pods and nodes
+    - Teaches Kubernetes-native resource monitoring
+  - **Tier 2: Application Metrics (/metrics Endpoint)**
+    - Added `/metrics` JSON endpoint to Flask app
+    - Returns uptime_seconds, request_count, version, timestamp, status
+    - Demonstrates application-level telemetry (educational alternative to Prometheus)
+    - In-memory counters (resets on pod restart) suitable for learning scope
+    - 12 comprehensive unit tests covering structure, data types, performance
+  - **Tier 3: Structured Logging**
+    - Implemented structured JSON logging for all endpoints (/, /health, /ready, /metrics)
+    - Logs include timestamp (ISO 8601), event type, endpoint, method, remote_addr
+    - Machine-readable format for parsing with jq and log aggregators
+    - Fixed datetime.utcnow() deprecation (migrated to datetime.now(timezone.utc))
+  - **Documentation**
+    - Added comprehensive "Observability Features (Educational)" section to README.md
+    - Includes usage examples for all three tiers with kubectl/curl commands
+    - Complete observability workflow example (deploy → monitor → generate traffic → analyze)
+    - Learning path from beginner (this project) to production (Prometheus/Grafana)
+    - Added "Visual Alternative - Minikube Dashboard" subsection linking CLI commands to dashboard UI
+    - Cross-linked observability features with Visual Exploration section
+    - References docs/PRODUCTION_CONSIDERATIONS.md for advanced patterns
+  - Demonstrates observability fundamentals without complexity of full monitoring stack
+- **Visual Exploration Tools (Optional)**
+  - Added "Visual Exploration (Optional)" section to main README.md
+  - Documents Minikube dashboard for learning and troubleshooting
+  - Includes alternative tools: k9s, Lens, kubectl plugins
+  - Positioned as optional learning aid, not part of automation workflows
+  - Emphasizes kubectl as primary tool (production practice)
+  - Added brief mention in scripts/README.md for completeness
+- **Production Considerations Documentation**
+  - Created `docs/PRODUCTION_CONSIDERATIONS.md` - comprehensive guide for production patterns
+    - Multi-environment configuration with Kustomize (why to use, when to skip)
+    - Performance and load testing with k6/Locust (tools, examples, when needed)
+    - Observability with Prometheus/Grafana (metrics, logs, traces, setup examples)
+    - Chaos engineering and resilience testing with Chaos Mesh/Litmus (relates to manual crash recovery tests)
+    - Additional production patterns (security, HA, deployment strategies)
+    - Clear distinction between educational scope and production requirements
+  - Referenced from main README.md and docs/README.md for discoverability
+- **Docker Build Optimization**
+  - Added `.dockerignore` file to `app/` directory
+    - Excludes Python cache (`__pycache__/`), tests, development dependencies
+    - Excludes documentation, IDE files, and version control data
+    - Improves build speed, reduces image size, enhances security
+    - Documented in `app/README.md` with rationale and excluded files list
 - **Code Quality & Linting (Shift-Left Testing)**
   - Added Python linting with flake8
     - Created `.flake8` configuration file with educational rules
@@ -43,6 +91,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Moved `TESTING_IMPROVEMENTS_SUMMARY.md` to `docs/testing/`
 
 ### Changed
+- **Code Refactoring: Reduced Duplication in app.py**
+  - Created `log_event()` helper function to eliminate duplicated structured logging code
+  - Consolidated 4 identical logging blocks into single reusable function with **kwargs
+  - Function signature: `log_event(event, endpoint, **extra_fields)`
+  - Reduces maintenance burden and improves code clarity
+  - All 34 unit tests pass with zero changes required
+  - Educational benefit: Demonstrates DRY (Don't Repeat Yourself) principle
 - Enhanced CI/CD pipeline
   - Renumbered workflow steps after adding linting (Step 4)
   - Linting now runs before expensive build operations
@@ -69,6 +124,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test dependencies from production `requirements.txt`
 
 ### Fixed
+- **Documentation Corrections**
+  - Fixed incorrect Makefile target in README.md observability example (line 508)
+  - Changed `make deploy-local` to `make deploy` (correct target name)
+  - The Makefile target is `deploy`, not `deploy-local` (which runs `scripts/deploy_local.sh`)
+- **Test Fixture Dependencies**
+  - Fixed `test_environment_variables_affect_app_response` in `test_k8s/test_app_config.py`
+  - Added `service` and `ingress` fixtures to ensure backend pods are ready before testing
+  - Prevents race condition where Ingress is configured but pods aren't ready yet
+  - Test now properly skips (app doesn't have `/env` endpoint) instead of failing with 404/503 errors
+  - Resolves `make full-deploy` smoke test failures
 
 ### Security
 

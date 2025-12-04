@@ -141,6 +141,152 @@ def test_ready_endpoint_performance(client):
     assert latency < 0.1, f"Readiness check took {latency:.3f}s, expected < 0.1s"
 
 
+def test_metrics_endpoint_returns_200(client):
+    """Test that the /metrics endpoint returns 200 OK status."""
+    response = client.get('/metrics')
+    assert response.status_code == 200
+
+
+def test_metrics_endpoint_content_type(client):
+    """Test that the /metrics endpoint returns JSON content type."""
+    response = client.get('/metrics')
+    assert response.content_type == "application/json"
+
+
+def test_metrics_endpoint_structure(client):
+    """
+    Test that the /metrics endpoint returns the expected JSON structure.
+    
+    Educational Note:
+    The metrics endpoint provides basic application telemetry in JSON format.
+    This is a simplified approach for learning. Production systems typically use
+    Prometheus format (/metrics with text/plain) or full observability platforms.
+    """
+    response = client.get('/metrics')
+    data = response.get_json()
+    
+    # Verify all expected keys are present
+    expected_keys = {'app', 'version', 'uptime_seconds', 'request_count', 'timestamp', 'status'}
+    assert set(data.keys()) == expected_keys, f"Expected keys {expected_keys}, got {set(data.keys())}"
+
+
+def test_metrics_app_name(client):
+    """Test that the /metrics endpoint returns the correct app name."""
+    response = client.get('/metrics')
+    data = response.get_json()
+    assert data['app'] == 'hello-flask'
+
+
+def test_metrics_version(client):
+    """Test that the /metrics endpoint returns a version number."""
+    response = client.get('/metrics')
+    data = response.get_json()
+    assert data['version'] == '1.0.0'
+
+
+def test_metrics_status(client):
+    """Test that the /metrics endpoint returns running status."""
+    response = client.get('/metrics')
+    data = response.get_json()
+    assert data['status'] == 'running'
+
+
+def test_metrics_uptime_is_numeric(client):
+    """Test that uptime_seconds is a numeric value."""
+    response = client.get('/metrics')
+    data = response.get_json()
+    assert isinstance(data['uptime_seconds'], (int, float))
+    assert data['uptime_seconds'] >= 0
+
+
+def test_metrics_uptime_increases(client):
+    """
+    Test that uptime_seconds increases over time.
+    
+    Educational Note:
+    This demonstrates that metrics are dynamic and reflect real-time state.
+    In production, metrics are typically scraped periodically by monitoring systems.
+    """
+    response1 = client.get('/metrics')
+    uptime1 = response1.get_json()['uptime_seconds']
+    
+    time.sleep(0.1)  # Wait 100ms
+    
+    response2 = client.get('/metrics')
+    uptime2 = response2.get_json()['uptime_seconds']
+    
+    assert uptime2 > uptime1, "Uptime should increase over time"
+
+
+def test_metrics_request_count_is_numeric(client):
+    """Test that request_count is a numeric value."""
+    response = client.get('/metrics')
+    data = response.get_json()
+    assert isinstance(data['request_count'], int)
+    assert data['request_count'] >= 0
+
+
+def test_metrics_request_count_increments(client):
+    """
+    Test that request_count increments with each request.
+    
+    Educational Note:
+    This counter tracks requests to the main endpoint (/). In production,
+    you'd track multiple metrics (requests per endpoint, errors, latency, etc.).
+    This simple counter demonstrates the concept of application-level metrics.
+    
+    Note: Counter is in-memory and resets on pod restart. Production systems
+    use persistent metrics storage (Prometheus, CloudWatch, etc.).
+    """
+    # Get initial count
+    metrics1 = client.get('/metrics')
+    count1 = metrics1.get_json()['request_count']
+    
+    # Make a request to the main endpoint
+    client.get('/')
+    
+    # Check count increased
+    metrics2 = client.get('/metrics')
+    count2 = metrics2.get_json()['request_count']
+    
+    assert count2 == count1 + 1, f"Expected count to increase by 1, got {count1} -> {count2}"
+
+
+def test_metrics_timestamp_format(client):
+    """
+    Test that timestamp is in ISO 8601 format.
+    
+    Educational Note:
+    ISO 8601 (YYYY-MM-DDTHH:MM:SS.ffffff) is the standard for timestamps in APIs.
+    This format is timezone-aware and widely supported by monitoring tools.
+    """
+    response = client.get('/metrics')
+    data = response.get_json()
+    
+    # Verify timestamp exists and is a string
+    assert 'timestamp' in data
+    assert isinstance(data['timestamp'], str)
+    
+    # Verify ISO 8601 format (contains 'T' separator and has expected length)
+    assert 'T' in data['timestamp'], "Timestamp should be in ISO 8601 format (YYYY-MM-DDTHH:MM:SS)"
+
+
+def test_metrics_endpoint_performance(client):
+    """
+    Test that the /metrics endpoint responds quickly.
+    
+    Metrics endpoints are queried frequently by monitoring systems.
+    Slow responses can impact observability and increase overhead.
+    """
+    start_time = time.time()
+    response = client.get('/metrics')
+    end_time = time.time()
+    
+    latency = end_time - start_time
+    assert response.status_code == 200
+    assert latency < 0.1, f"/metrics took {latency:.3f}s, expected < 0.1s"
+
+
 def test_ready_endpoint_cache_control(client):
     """
     Test that /ready endpoint explicitly disables caching.

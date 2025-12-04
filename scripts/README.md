@@ -1078,6 +1078,25 @@ When adding new scripts:
 
 ---
 
+## Visual Exploration Tools
+
+While this project uses `kubectl` commands for automation and production best practices, you can optionally use visual tools for learning and troubleshooting:
+
+### Minikube Dashboard
+```bash
+minikube dashboard
+```
+Opens a web UI showing all cluster resources, logs, and metrics. Great for beginners to visualize Kubernetes objects.
+
+### Alternative Tools
+- **k9s** - Terminal UI for Kubernetes (recommended for power users)
+- **Lens** - Desktop IDE for Kubernetes
+- **kubectl plugins** - Extend kubectl with additional functionality
+
+**Note:** All scripts in this project use `kubectl` for consistency and to teach production practices.
+
+---
+
 ## Related Documentation
 
 - **[Main README](../README.md)** - Project overview and quick start

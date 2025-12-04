@@ -380,6 +380,247 @@ kubectl port-forward svc/hello-flask 5000:5000
 # Then open http://localhost:5000
 ```
 
+---
+
+## Observability Features (Educational)
+
+This application demonstrates three tiers of observability for Kubernetes applications. These features are designed for learning - production systems would typically use comprehensive platforms like Prometheus/Grafana, ELK Stack, or OpenTelemetry (see [docs/PRODUCTION_CONSIDERATIONS.md](docs/PRODUCTION_CONSIDERATIONS.md)).
+
+### Tier 1: Kubernetes Metrics (Resource Monitoring)
+
+**Enable metrics-server addon** (only needed once):
+```bash
+minikube addons enable metrics-server
+```
+
+**View node resources:**
+```bash
+kubectl top nodes
+```
+Shows CPU and memory usage for Minikube nodes.
+
+**View pod resources:**
+```bash
+kubectl top pods -l app=hello-flask
+```
+Shows CPU and memory consumption for your application pods.
+
+**Notes:**
+- Metrics take ~60 seconds to populate after enabling
+- This is Kubernetes-native resource monitoring
+- Production uses Prometheus or cloud provider metrics (CloudWatch, Azure Monitor, etc.)
+
+### Tier 2: Application Metrics (/metrics Endpoint)
+
+The application exposes a `/metrics` endpoint returning JSON metrics:
+
+**Query metrics via kubectl port-forward:**
+```bash
+# In one terminal, forward port 5000
+kubectl port-forward svc/hello-flask 5000:5000
+
+# In another terminal, query metrics
+curl http://localhost:5000/metrics
+```
+
+**Query metrics via Ingress** (if using Option B deployment):
+```bash
+curl http://hello-flask.local/metrics
+```
+
+**Example response:**
+```json
+{
+  "app": "hello-flask",
+  "version": "1.0.0",
+  "uptime_seconds": 127.45,
+  "request_count": 23,
+  "timestamp": "2024-01-15T14:30:45.123456+00:00",
+  "status": "running"
+}
+```
+
+**Metrics explained:**
+- `uptime_seconds` - Time since pod started (resets on pod restart)
+- `request_count` - Number of requests to `/` endpoint (in-memory counter)
+- `timestamp` - Current UTC time in ISO 8601 format
+- `status` - Application health indicator
+
+**Educational notes:**
+- ⚠️ **In-memory counters** - Metrics reset when pod restarts
+- ⚠️ **Single pod** - Counts only requests to this specific pod
+- 📚 **Production alternative** - Use Prometheus client library with `/metrics` in OpenMetrics format
+- 📚 **Aggregation** - Production uses time-series databases for historical data
+
+### Tier 3: Structured Logging
+
+The application uses structured JSON logging for all endpoints:
+
+**View logs:**
+```bash
+# Get logs from all hello-flask pods
+kubectl logs -l app=hello-flask
+
+# Follow logs in real-time
+kubectl logs -l app=hello-flask -f
+
+# Get logs from specific pod
+POD=$(kubectl get pods -l app=hello-flask -o jsonpath="{.items[0].metadata.name}")
+kubectl logs $POD
+```
+
+**Example log output:**
+```json
+{"timestamp": "2024-01-15T14:30:45.123456+00:00", "event": "request", "endpoint": "/", "method": "GET", "remote_addr": "10.244.0.1", "request_count": 23}
+{"timestamp": "2024-01-15T14:30:50.789012+00:00", "event": "health_check", "endpoint": "/health", "status": "healthy"}
+{"timestamp": "2024-01-15T14:30:55.345678+00:00", "event": "readiness_check", "endpoint": "/ready", "status": "ready"}
+{"timestamp": "2024-01-15T14:31:00.901234+00:00", "event": "metrics_request", "endpoint": "/metrics"}
+```
+
+**Parse logs with jq** (JSON processor):
+```bash
+# Filter only request events
+kubectl logs -l app=hello-flask | grep -o '{.*}' | jq 'select(.event == "request")'
+
+# Count events by type
+kubectl logs -l app=hello-flask | grep -o '{.*}' | jq -r '.event' | sort | uniq -c
+
+# Extract timestamps for performance analysis
+kubectl logs -l app=hello-flask | grep -o '{.*}' | jq -r '.timestamp'
+```
+
+**Structured logging benefits:**
+- ✅ **Machine-readable** - Easy to parse and analyze programmatically
+- ✅ **Filterable** - Query by event type, endpoint, etc.
+- ✅ **Consistent** - Same structure across all log entries
+- ✅ **Integration** - Works with log aggregators (ELK, Loki, CloudWatch)
+
+**Production logging:**
+- Use log aggregation platforms (ELK Stack, Grafana Loki, Splunk)
+- Add correlation IDs for distributed tracing
+- Include severity levels (DEBUG, INFO, WARN, ERROR)
+- Integrate with alerting systems
+
+### Putting It All Together: Complete Observability Example
+
+**1. Deploy application:**
+```bash
+make deploy
+```
+
+**2. Enable metrics:**
+```bash
+minikube addons enable metrics-server
+sleep 60  # Wait for metrics to populate
+```
+
+**3. Monitor resources:**
+```bash
+kubectl top nodes
+kubectl top pods -l app=hello-flask
+```
+
+**4. Generate traffic:**
+```bash
+# If using NodePort (Option A)
+URL=$(minikube service hello-flask --url)
+for i in {1..10}; do curl $URL; done
+
+# If using Ingress (Option B)
+for i in {1..10}; do curl http://hello-flask.local; done
+```
+
+**5. Check application metrics:**
+```bash
+kubectl port-forward svc/hello-flask 5000:5000 &
+curl http://localhost:5000/metrics | jq
+```
+
+**6. View structured logs:**
+```bash
+kubectl logs -l app=hello-flask | grep -o '{.*}' | jq
+```
+
+**Expected workflow:**
+- 📊 **Tier 1** shows pod CPU/memory usage (infrastructure level)
+- 📈 **Tier 2** shows application uptime and request counts (application level)
+- 📝 **Tier 3** shows detailed request history with timestamps (request level)
+
+**Visual Alternative - Minikube Dashboard:**
+
+All of these metrics can also be viewed in the Minikube dashboard (see [Visual Exploration](#visual-exploration-optional) section):
+
+```bash
+minikube dashboard
+```
+
+The dashboard provides:
+- 📊 **Tier 1 (Resource Metrics)**: Workloads → Pods → Select pod → View CPU/Memory graphs (requires metrics-server)
+- 📝 **Tier 3 (Logs)**: Workloads → Pods → Select pod → Logs tab → View structured JSON logs
+- 🔍 **Real-time monitoring**: Auto-refreshing metrics and log streaming
+
+**Note:** The dashboard is great for visual learning and exploration. For automation, scripting, and production workflows, use the `kubectl` commands shown above.
+
+### Learning Path: From Simple to Production
+
+This three-tier approach teaches observability fundamentals:
+
+1. **Start here** (this project):
+   - ✅ Learn metrics-server (kubectl top)
+   - ✅ Understand application metrics concepts
+   - ✅ Practice structured logging
+
+2. **Next steps** (intermediate):
+   - Add Prometheus for metrics collection
+   - Set up Grafana for visualization
+   - Use Loki for log aggregation
+
+3. **Production** (advanced):
+   - Full observability platforms (Datadog, New Relic, Dynatrace)
+   - Distributed tracing (Jaeger, Zipkin)
+   - Service mesh observability (Istio, Linkerd)
+   - Custom dashboards and SLO monitoring
+
+📚 See [docs/PRODUCTION_CONSIDERATIONS.md](docs/PRODUCTION_CONSIDERATIONS.md#3-observability-metrics-logs-traces) for comprehensive production patterns.
+
+---
+
+## Visual Exploration (Optional)
+
+### Minikube Dashboard
+
+For visual learners, Minikube includes a built-in Kubernetes dashboard that provides a web UI to explore cluster resources:
+
+```bash
+minikube dashboard
+```
+
+This opens a browser showing:
+- 📊 **Workloads** - Deployments, Pods, ReplicaSets
+- 🔧 **Services** - Service endpoints and networking
+- ⚙️ **Config** - ConfigMaps and Secrets
+- 📝 **Logs** - Pod logs with filtering (including the structured JSON logs from [Observability Features](#observability-features-educational))
+- 📈 **Metrics** - CPU/Memory usage (if metrics-server enabled - see [Tier 1 Observability](#tier-1-kubernetes-metrics-resource-monitoring))
+
+**When to use:**
+- ✅ Learning Kubernetes - Visualize how resources connect
+- ✅ Quick troubleshooting - See pod status, logs, events in one place
+- ✅ Understanding deployments - Watch rolling updates in real-time
+
+**Best practices:**
+- 💡 Use dashboard for **exploration and learning**
+- 💡 Use `kubectl` for **automation and production**
+- 💡 This project's tests use `kubectl` (the production approach)
+
+**Alternative CLI tools** (more common in production):
+- **[k9s](https://k9scli.io/)** - Terminal UI for Kubernetes (highly recommended)
+- **[Lens](https://k8slens.dev/)** - Desktop IDE for Kubernetes
+- **[kubectl with plugins](https://krew.sigs.k8s.io/)** - Extend kubectl functionality
+
+**Note:** The dashboard is NOT part of this project's automation or testing workflows. All scripts and tests use `kubectl` commands to teach industry-standard practices.
+
+---
+
 ## Clean Up Local Minikube Resources
 ```bash
 kubectl delete -f k8s/ingress.yaml     # if using Ingress
@@ -600,3 +841,5 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
   - [Script Integration](docs/testing/SCRIPT_INTEGRATION.md) - Script integration with pytest markers
 - **Operations:**
   - [Development Workflow](docs/DEVELOPMENT_WORKFLOW.md) - Pre-push validation and best practices
+  - [Production Considerations](docs/PRODUCTION_CONSIDERATIONS.md) - Beyond "Hello World": Multi-environment configs, observability, load testing
+

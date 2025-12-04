@@ -93,6 +93,7 @@ app/
 ├── requirements.txt      # Production dependencies
 ├── requirements-dev.txt  # Development/testing dependencies
 ├── Dockerfile            # Container image definition
+├── .dockerignore         # Docker build context exclusions
 └── tests/
     └── test_app.py       # Unit tests
 ```
@@ -113,6 +114,26 @@ docker build -t flask-hello-world:local app/
 # Run
 docker run -p 5000:5000 flask-hello-world:local
 ```
+
+## Docker Build Optimization
+
+### `.dockerignore`
+The `.dockerignore` file excludes unnecessary files from the Docker build context, improving:
+
+- ✅ **Build Speed** - Smaller context = faster builds
+- ✅ **Image Size** - Excludes test files, docs, cache files
+- ✅ **Security** - Prevents accidental inclusion of sensitive files
+
+**Excluded:**
+- `__pycache__/` - Python bytecode cache
+- `requirements-dev.txt` - Development dependencies
+- `tests/` - Unit tests
+- `README.md` - Documentation
+- `.git/` - Version control data
+- IDE files (`.vscode/`, `.idea/`)
+- Virtual environments (`venv/`)
+
+**Result:** Only essential files (`app.py`, `__init__.py`, `requirements.txt`) are included in the Docker image.
 
 ### In Kubernetes
 See main project README for Kubernetes deployment instructions.

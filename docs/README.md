@@ -7,6 +7,7 @@ This directory contains comprehensive documentation for the Flask Hello World Mi
 ```
 docs/
 ├── README.md (this file)              # Documentation index
+├── PRODUCTION_CONSIDERATIONS.md       # Beyond "Hello World" - production patterns
 ├── operations/                        # Kubernetes operations & deployment
 │   ├── README.md                      # Operations documentation index
 │   ├── CI_CD_GUIDE.md                # CI/CD pipeline reference
@@ -123,6 +124,7 @@ Development workflow, changelog management, and contribution guidelines.
 - [Probes Guide](operations/probes/PROBES_GUIDE.md) - Health monitoring and self-healing
 - [Ingress Guide](operations/ingress/INGRESS_GUIDE.md) - Complete Ingress troubleshooting and CI/CD guide
 - [Scripts Guide](../scripts/README.md) - Automation scripts including service access
+- [Production Considerations](PRODUCTION_CONSIDERATIONS.md) - 📚 **Beyond this project: Kustomize, observability, load testing**
 
 ## 📝 Contributing
 

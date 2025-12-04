@@ -6,7 +6,7 @@ from .utils import get_minikube_ip
 
 
 @pytest.mark.ingress
-def test_environment_variables_affect_app_response():
+def test_environment_variables_affect_app_response(service, ingress):
     """
     Verify that the app can access and use environment variables from ConfigMap/Secret.
     
@@ -16,6 +16,10 @@ def test_environment_variables_affect_app_response():
     Note: This test requires the app to expose environment information via an endpoint.
     If the app doesn't have such an endpoint, this test will be skipped.
     """
+    # Use service and ingress fixtures to ensure backend is ready
+    assert service is not None  # Type guard for Pylance
+    assert ingress is not None  # Type guard for Pylance
+    
     # Get service access URL
     minikube_ip = get_minikube_ip()
     if not minikube_ip:
